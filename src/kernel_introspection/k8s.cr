@@ -3,16 +3,19 @@ require "kernel_introspection"
 module KernelIntrospection
   module K8s
     module Node
-      def self.pids(node)
+      def self.pids(node) : Array(String)
         Log.info { "pids" }
         ls_proc = ClusterTools.exec_by_node("ls /proc/", node)
+        unless ls_proc[:status].success?
+          return [] of String
+        end
         Log.info { "pids ls_proc: #{ls_proc}" }
         parsed_ls = KernelIntrospection.parse_ls(ls_proc[:output])
         pids = KernelIntrospection.pids_from_ls_proc(parsed_ls)
         pids
       end
 
-      def self.pids_by_container(container_id, node)
+      def self.pids_by_container(container_id, node) : Array(String)
         # Command explanation:
         # 1. Get all process directories in /proc with find.
         # 2. Exec grep <container_id> for every returned process cgroup file,
@@ -21,6 +24,9 @@ module KernelIntrospection
         # by sed to only return a list of <pid>s
         command = "/bin/sh -c \"find /proc -maxdepth 1 -regex '/proc/[0-9]+' -exec grep -l '#{container_id}' {}/cgroup \\; 2>/dev/null | sed -e 's,/proc/\\([0-9]*\\)/cgroup,\\1,'\""
         result = ClusterTools.exec_by_node(command, node)
+        unless result[:status].success?
+          return [] of String
+        end
         output = result["output"].strip
 
         pids = output.split("\n")
@@ -32,8 +38,13 @@ module KernelIntrospection
         proc_statuses = pids.map do |pid|
           Log.info { "all_statuses_by_pids pid: #{pid}" }
           proc_status = ClusterTools.exec_by_node("cat /proc/#{pid}/status", node)
-          proc_status[:output]
-        end
+          # if /proc/#{pid}/status cannot be read it means that the process is no longer available
+          unless proc_status[:status].success?
+            nil
+          else
+            proc_status[:output]
+          end
+        end.compact
 
         Log.debug { "proc process_statuses_by_node: #{proc_statuses}" }
         proc_statuses
