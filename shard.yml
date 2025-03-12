@@ -23,5 +23,5 @@ dependencies:
     version: ~> 1.0.8
   cluster_tools:
     github: cnf-testsuite/cluster_tools
-    branch: rlal_change_kubectl_shard_ver
+    version: ~> 1.0.11
 
