@@ -2,7 +2,7 @@ version: 2.0
 shards:
   cluster_tools:
     git: https://github.com/cnf-testsuite/cluster_tools.git
-    version: 1.0.0
+    version: 1.0.11
 
   docker_client:
     git: https://github.com/cnf-testsuite/docker_client.git
@@ -14,7 +14,7 @@ shards:
 
   kubectl_client:
     git: https://github.com/cnf-testsuite/kubectl_client.git
-    version: 1.0.1
+    version: 1.0.8
 
   popcorn:
     git: https://github.com/icyleaf/popcorn.git
