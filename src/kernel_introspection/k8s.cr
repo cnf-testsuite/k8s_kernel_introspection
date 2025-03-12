@@ -39,11 +39,7 @@ module KernelIntrospection
           Log.info { "all_statuses_by_pids pid: #{pid}" }
           proc_status = ClusterTools.exec_by_node("cat /proc/#{pid}/status", node)
           # if /proc/#{pid}/status cannot be read it means that the process is no longer available
-          unless proc_status[:status].success?
-            nil
-          else
-            proc_status[:output]
-          end
+          proc_status[:output] if proc_status[:status].success?
         end.compact
 
         Log.debug { "proc process_statuses_by_node: #{proc_statuses}" }
@@ -146,7 +142,6 @@ module KernelIntrospection
       begin
         resp = KubectlClient::Utils.exec(pod_name.to_s, "ls /proc/", container_name: container_name, namespace: namespace)
       rescue ex : KubectlClient::ShellCMD::K8sClientCMDException
-        puts "caught"
         Log.warn { "Exception rescued: #{ex.message}" }
         return [] of Int32
       end

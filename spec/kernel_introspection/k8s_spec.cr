@@ -13,7 +13,7 @@ describe "KernelIntrospection::K8s" do
   end
 
   it "'#status_by_proc' should return all statuses for all containers in a pod", tags: ["status_by_proc"] do
-    result = KubectlClient::ShellCMD.run("kubectl run nginx --image=nginx --labels='name=nginx'", )
+    result = KubectlClient::ShellCMD.run("kubectl run nginx --image=nginx --labels='name=nginx'")
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods.should_not be_nil
     pods = KubectlClient::Get.pods_by_labels(pods, {"name" => "nginx"})
